@@ -515,10 +515,13 @@ class efergy(device):
     err = response[0x22] | (response[0x23] << 8)
     if err == 0:
       payload = self.decrypt(bytes(response[0x38:]))
-      if type(payload[0x07]) == int:
-        energy = int(hex(payload[0x07] * 256 + payload[0x06])[2:]) + int(hex(payload[0x05])[2:])/100.0
+      if type(payload[0x05]) == int:
+        energy = (float(hex(payload[0x06]) * 256 + float(payload[0x05]) + float(hex(payload[0x04])))/100.0)/4
       else:
-        energy = (payload[6]*256 + payload[5] + payload[4]/100.0)/4
+	#print ord(payload[0x06])
+	#print ord(payload[0x05])
+	#print ord(payload[0x04])
+        energy = (float(ord(payload[0x06]))*256 + float(ord(payload[0x05])) + float(ord(payload[0x04]))/100.0)/4
       return energy
 
 class a1(device):
