@@ -28,6 +28,7 @@ def gendevice(devtype, host, mac):
                 0x7530, 0x7918,                  # OEM branded SPMini2
                 0x2736                           # SPMiniPlus
                 ],
+          efergy: [0x271d],  # Efergy ego smart plug
           rm: [0x2712,  # RM2
                0x2737,  # RM Mini
                0x273d,  # RM Pro Phicomm
@@ -442,6 +443,83 @@ class sp2(device):
         energy = int(hex(ord(payload[0x07]) * 256 + ord(payload[0x06]))[2:]) + int(hex(ord(payload[0x05]))[2:])/100.0
       return energy
 
+class efergy(device):
+  def __init__ (self, host, mac, devtype):
+    device.__init__(self, host, mac, devtype)
+    self.type = "EFERGY"
+
+  def set_power(self, state):
+    """Sets the power state of the smart plug."""
+    packet = bytearray(16)
+    packet[0] = 2
+    if self.check_nightlight():
+      packet[4] = 3 if state else 2
+    else:
+      packet[4] = 1 if state else 0
+    self.send_packet(0x6a, packet)
+
+  def set_nightlight(self, state):
+    """Sets the night light state of the smart plug"""
+    packet = bytearray(16)
+    packet[0] = 2
+    if self.check_power():
+      packet[4] = 3 if state else 1
+    else:
+      packet[4] = 2 if state else 0
+    self.send_packet(0x6a, packet)
+
+  def check_power(self):
+    """Returns the power state of the smart plug."""
+    packet = bytearray(16)
+    packet[0] = 1
+    response = self.send_packet(0x6a, packet)
+    err = response[0x22] | (response[0x23] << 8)
+    if err == 0:
+      payload = self.decrypt(bytes(response[0x38:]))
+      if type(payload[0x4]) == int:
+        if payload[0x4] == 1 or payload[0x4] == 3:
+          state = True
+        else:
+          state = False
+      else:
+        if ord(payload[0x4]) == 1 or ord(payload[0x4]) == 3:
+          state = True
+        else:
+          state = False
+      return state
+
+  def check_nightlight(self):
+    """Returns the power state of the smart plug."""
+    packet = bytearray(16)
+    packet[0] = 1
+    response = self.send_packet(0x6a, packet)
+    err = response[0x22] | (response[0x23] << 8)
+    if err == 0:
+      payload = self.decrypt(bytes(response[0x38:]))
+      if type(payload[0x4]) == int:
+        if payload[0x4] == 2 or payload[0x4] == 3:
+          state = True
+        else:
+          state = False
+      else:
+        if ord(payload[0x4]) == 2 or ord(payload[0x4]) == 3:
+          state = True
+        else:
+          state = False
+      return state
+
+  def get_energy(self):
+    packet = bytearray(16)
+    packet[0] = 4
+    response = self.send_packet(0x6a, packet)
+    err = response[0x22] | (response[0x23] << 8)
+    if err == 0:
+      payload = self.decrypt(bytes(response[0x38:]))
+      if type(payload[0x07]) == int:
+        energy = int(hex(payload[0x07] * 256 + payload[0x06])[2:]) + int(hex(payload[0x05])[2:])/100.0
+      else:
+        energy = (payload[6]*256 + payload[5] + payload[4]/100.0)/4
+      return energy
 
 class a1(device):
   def __init__ (self, host, mac, devtype):
