@@ -452,20 +452,7 @@ class efergy(device):
     """Sets the power state of the smart plug."""
     packet = bytearray(16)
     packet[0] = 2
-    if self.check_nightlight():
-      packet[4] = 3 if state else 2
-    else:
-      packet[4] = 1 if state else 0
-    self.send_packet(0x6a, packet)
-
-  def set_nightlight(self, state):
-    """Sets the night light state of the smart plug"""
-    packet = bytearray(16)
-    packet[0] = 2
-    if self.check_power():
-      packet[4] = 3 if state else 1
-    else:
-      packet[4] = 2 if state else 0
+    packet[4] = 1 if state else 0
     self.send_packet(0x6a, packet)
 
   def check_power(self):
@@ -488,26 +475,6 @@ class efergy(device):
           state = False
       return state
 
-  def check_nightlight(self):
-    """Returns the power state of the smart plug."""
-    packet = bytearray(16)
-    packet[0] = 1
-    response = self.send_packet(0x6a, packet)
-    err = response[0x22] | (response[0x23] << 8)
-    if err == 0:
-      payload = self.decrypt(bytes(response[0x38:]))
-      if type(payload[0x4]) == int:
-        if payload[0x4] == 2 or payload[0x4] == 3:
-          state = True
-        else:
-          state = False
-      else:
-        if ord(payload[0x4]) == 2 or ord(payload[0x4]) == 3:
-          state = True
-        else:
-          state = False
-      return state
-
   def get_energy(self):
     packet = bytearray(16)
     packet[0] = 4
@@ -516,13 +483,59 @@ class efergy(device):
     if err == 0:
       payload = self.decrypt(bytes(response[0x38:]))
       if type(payload[0x05]) == int:
-        energy = (float(hex(payload[0x06]) * 256 + float(payload[0x05]) + float(hex(payload[0x04])))/100.0)/4
+        energy = (float(hex(payload[0x06]) * 256 + float(payload[0x05]) + float(hex(payload[0x04])))/100.0)/3.9093
       else:
-	#print ord(payload[0x06])
-	#print ord(payload[0x05])
-	#print ord(payload[0x04])
-        energy = (float(ord(payload[0x06]))*256 + float(ord(payload[0x05])) + float(ord(payload[0x04]))/100.0)/4
-      return energy
+        energy = (float(ord(payload[0x06]))*256 + float(ord(payload[0x05])) + float(ord(payload[0x04]))/100.0)/3.9093
+      return "%.1f" % energy
+
+  def get_energy2(self):
+    packet = bytearray(16)
+    packet[0] = 5
+    response = self.send_packet(0x6a, packet)
+    err = response[0x22] | (response[0x23] << 8)
+    if err == 0:
+      payload = self.decrypt(bytes(response[0x38:]))
+      print ord(payload[0x00])
+      print ord(payload[0x01])
+      print ord(payload[0x02])
+      print ord(payload[0x03])
+      print ord(payload[0x04])
+      print ord(payload[0x05])
+      print ord(payload[0x06])
+      print ord(payload[0x07])
+      print ord(payload[0x08])
+      print ord(payload[0x09])
+      print ord(payload[0x10])
+      print ord(payload[0x11])
+      print ord(payload[0x12])
+      print ord(payload[0x13])
+      print ord(payload[0x14])
+      print ord(payload[0x15])
+      print ord(payload[0x16])
+      print ord(payload[0x17])
+      print ord(payload[0x18])
+      print ord(payload[0x19])
+      print ord(payload[0x20])
+      print ord(payload[0x21])
+      print ord(payload[0x22])
+      print ord(payload[0x23])
+      print ord(payload[0x24])
+      print ord(payload[0x25])
+      print ord(payload[0x26])
+      print ord(payload[0x27])
+      print ord(payload[0x28])
+      print ord(payload[0x29])
+      print ord(payload[0x30])
+      print ord(payload[0x31])
+      print ord(payload[0x32])
+      print ord(payload[0x33])
+      print ord(payload[0x34])
+      print ord(payload[0x35])
+      print ord(payload[0x36])
+      print ord(payload[0x37])
+      print ord(payload[0x38])
+      print ord(payload[0x39])
+
 
 class a1(device):
   def __init__ (self, host, mac, devtype):
