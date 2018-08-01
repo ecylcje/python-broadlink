@@ -1,11 +1,12 @@
-Python control for Broadlink RM2 IR controllers
-===============================================
+Python control for Broadlink (or OEM) Devices
+=============================================
 
 A simple Python API for controlling IR controllers from [Broadlink](http://www.ibroadlink.com/rm/). At present, the following devices are currently supported:
 
 * RM Pro (referred to as RM2 in the codebase)
 * A1 sensor platform devices are supported
 * RM3 mini IR blaster
+* Efergy Ego Smart Plug
 
 There is currently no support for the cloud API.
 
@@ -64,7 +65,7 @@ Obtain sensor data from an A1:
 data = devices[0].check_sensors()
 ```
 
-Set power state on a SmartPlug SP2/SP3:
+Set power state on a SmartPlug SP2/SP3/Efergy Ego:
 ```
 devices[0].set_power(True)
 ```
