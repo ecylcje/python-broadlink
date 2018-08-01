@@ -483,14 +483,14 @@ class efergy(device):
     if err == 0:
       payload = self.decrypt(bytes(response[0x38:]))
       if type(payload[0x05]) == int:
-        energy = (float(hex(payload[0x06]) * 256 + float(payload[0x05]) + float(hex(payload[0x04])))/100.0)/3.9093
+        energy = int((float(hex(payload[0x06]) * 256 + float(payload[0x05]) + float(hex(payload[0x04])))/100.0)/3.9093)
       else:
-        energy = (float(ord(payload[0x06]))*256 + float(ord(payload[0x05])) + float(ord(payload[0x04]))/100.0)/3.9093
-      return "%.1f" % energy
+        energy = int((float(ord(payload[0x06]))*256 + float(ord(payload[0x05])) + float(ord(payload[0x04]))/100.0)/3.9093)
+      return energy
 
   def get_energy2(self):
     packet = bytearray(16)
-    packet[0] = 5
+    packet[0] = 6
     response = self.send_packet(0x6a, packet)
     err = response[0x22] | (response[0x23] << 8)
     if err == 0:
